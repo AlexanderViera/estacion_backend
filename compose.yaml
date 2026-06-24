@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   mosquitto_fio:
     image: eclipse-mosquitto:latest
     container_name: broker_estacion
+    user: "1000:1000"
     ports:
       - "1884:1883" 
     volumes:
@@ -27,4 +26,23 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
       - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET}
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUX_TOKEN}
+    restart: unless-stopped
+  
+  nodered_fio:
+    image: nodered/node-red:latest
+    container_name: nodered_estacion
+    ports:
+      - "1881:1880" # Mapeamos el puerto 1881 externo al 1880 interno
+    volumes:
+      - ./nodered_data:/data # Carpeta local para guardar flujos programados
+    restart: unless-stopped
+
+  grafana_fio:
+    image: grafana/grafana-oss:latest
+    container_name: grafana_estacion
+    user: "1000:1000" # Aplicamos la misma magia de permisos por adelantado
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana_data:/var/lib/grafana
     restart: unless-stopped
